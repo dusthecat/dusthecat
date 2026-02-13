@@ -67,14 +67,12 @@ position: relative;
 overflow: hidden;
 }
 
-/* fixed left column icons */
 .fixed-icons {
 position: absolute;
 top: 20px;
 left: 20px;
 }
 
-/* scattered icon layer */
 #icon-layer {
 position: absolute;
 inset: 0;
@@ -107,12 +105,8 @@ pointer-events: none;
 
 .window {
 position: absolute;
-width: 420px;
-z-index: 5;
-}
-
-.media-window {
 width: 520px;
+z-index: 5;
 }
 
 .media-content {
@@ -121,15 +115,6 @@ max-height: 60vh;
 border: 1px inset #000;
 background: #fff;
 display: block;
-}
-
-.contract-box {
-font-family: monospace;
-font-size: 12px;
-word-break: break-all;
-background: #fff;
-padding: 6px;
-border: 1px inset #000;
 }
 
 /* ---------------- TASKBAR ---------------- */
@@ -156,10 +141,6 @@ padding: 2px 12px;
 
 .taskbar-spacer {
 flex: 1;
-}
-
-.taskbar-clock .window {
-margin: 0;
 }
 
 .taskbar-clock .window-body {
@@ -202,7 +183,7 @@ z-index: 2000;
 
 <img src="./floatingdus.png" id="floating-cat" alt="DUSTHECAT">
 
-<!-- Fixed Icons (original positions preserved) -->
+<!-- Fixed Icons -->
 <div class="fixed-icons">
 <div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('about')">
 <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
@@ -224,7 +205,7 @@ z-index: 2000;
 <div id="icon-layer"></div>
 
 <!-- Media Viewer -->
-<div id="mediaViewer" class="window media-window" style="top:120px; left:200px; display:none;">
+<div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text" id="mediaTitle">Media Viewer</div>
 <div class="title-bar-controls">
@@ -241,9 +222,7 @@ z-index: 2000;
 <div class="start-button">
 <button onclick="toggleStartMenu()">Start</button>
 </div>
-
 <div class="taskbar-spacer"></div>
-
 <div class="taskbar-clock">
 <div class="window">
 <div class="window-body" id="clock"></div>
@@ -256,9 +235,9 @@ z-index: 2000;
 <div class="window-body">
 <p><strong>Programs</strong></p>
 <hr>
-<p style="cursor:pointer;" onclick="openWindow('about')">About</p>
-<p style="cursor:pointer;" onclick="openWindow('token')">Token Info</p>
-<p style="cursor:pointer;" onclick="openWindow('roadmap')">Roadmap</p>
+<p onclick="openWindow('about')" style="cursor:pointer;">About</p>
+<p onclick="openWindow('token')" style="cursor:pointer;">Token Info</p>
+<p onclick="openWindow('roadmap')" style="cursor:pointer;">Roadmap</p>
 </div>
 </div>
 
@@ -290,33 +269,50 @@ now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ---------------- START MENU ---------------- */
-function toggleStartMenu() {
-const menu = document.getElementById("start-menu");
-menu.style.display = menu.style.display === "none" ? "block" : "none";
-}
-
-/* ---------------- MEDIA ICONS ---------------- */
+/* ---------------- MEDIA PLACEHOLDERS ---------------- */
 
 const mediaIcons = [
-{ label: "meme1.gif", type: "image", url: "REPLACE_URL_1" },
-{ label: "meme2.png", type: "image", url: "REPLACE_URL_2" },
-{ label: "clip1.mp4", type: "video", url: "REPLACE_URL_3" },
-{ label: "clip2.mp4", type: "video", url: "REPLACE_URL_4" },
-{ label: "poster.jpg", type: "image", url: "REPLACE_URL_5" },
-{ label: "hype.gif", type: "image", url: "REPLACE_URL_6" }
+
+/* 8 IMAGE PLACEHOLDERS */
+{ label: "image1.png", type: "image", url: "REPLACE_IMAGE_URL_1" },
+{ label: "image2.png", type: "image", url: "REPLACE_IMAGE_URL_2" },
+{ label: "image3.png", type: "image", url: "REPLACE_IMAGE_URL_3" },
+{ label: "image4.png", type: "image", url: "REPLACE_IMAGE_URL_4" },
+{ label: "image5.png", type: "image", url: "REPLACE_IMAGE_URL_5" },
+{ label: "image6.png", type: "image", url: "REPLACE_IMAGE_URL_6" },
+{ label: "image7.png", type: "image", url: "REPLACE_IMAGE_URL_7" },
+{ label: "image8.png", type: "image", url: "REPLACE_IMAGE_URL_8" },
+
+/* 12 VIDEO/GIF PLACEHOLDERS */
+{ label: "video1.mp4", type: "video", url: "REPLACE_VIDEO_URL_1" },
+{ label: "video2.mp4", type: "video", url: "REPLACE_VIDEO_URL_2" },
+{ label: "video3.mp4", type: "video", url: "REPLACE_VIDEO_URL_3" },
+{ label: "video4.mp4", type: "video", url: "REPLACE_VIDEO_URL_4" },
+{ label: "video5.mp4", type: "video", url: "REPLACE_VIDEO_URL_5" },
+{ label: "video6.mp4", type: "video", url: "REPLACE_VIDEO_URL_6" },
+{ label: "video7.mp4", type: "video", url: "REPLACE_VIDEO_URL_7" },
+{ label: "video8.mp4", type: "video", url: "REPLACE_VIDEO_URL_8" },
+{ label: "video9.mp4", type: "video", url: "REPLACE_VIDEO_URL_9" },
+{ label: "video10.mp4", type: "video", url: "REPLACE_VIDEO_URL_10" },
+{ label: "video11.mp4", type: "video", url: "REPLACE_VIDEO_URL_11" },
+{ label: "video12.mp4", type: "video", url: "REPLACE_VIDEO_URL_12" }
+
 ];
 
 function scatterIcons() {
 const layer = document.getElementById("icon-layer");
 const desktop = document.getElementById("desktop");
-const padding = 20;
 
 mediaIcons.forEach(item => {
 const icon = document.createElement("div");
 icon.className = "icon";
+
+const iconImg = item.type === "image"
+? "https://win98icons.alexmeub.com/icons/png/image_old-0.png"
+: "https://win98icons.alexmeub.com/icons/png/media_player-0.png";
+
 icon.innerHTML = `
-<img src="https://win98icons.alexmeub.com/icons/png/image_old-0.png">
+<img src="${iconImg}">
 <div>${item.label}</div>
 `;
 
