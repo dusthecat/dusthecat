@@ -63,8 +63,9 @@ font-size: 14px;
 
 #desktop {
 display: none;
-height: 100vh;
+height: calc(100vh - 40px);
 padding: 20px;
+position: relative;
 }
 
 .icon {
@@ -97,15 +98,42 @@ border: 1px inset #000;
 
 /* ---------------- TASKBAR ---------------- */
 
-.taskbar {
+#taskbar {
 position: fixed;
 bottom: 0;
 width: 100%;
-}
-.taskbar-inner {
+height: 40px;
+background: #c0c0c0;
+border-top: 2px solid white;
 display: flex;
-justify-content: space-between;
 align-items: center;
+padding: 0 5px;
+box-sizing: border-box;
+z-index: 1000;
+}
+
+.start-button button {
+font-weight: bold;
+padding: 2px 12px;
+}
+
+.taskbar-spacer {
+flex-grow: 1;
+}
+
+.taskbar-clock {
+margin-right: 5px;
+}
+
+/* ---------------- START MENU ---------------- */
+
+#start-menu {
+display: none;
+position: fixed;
+bottom: 40px;
+left: 5px;
+width: 200px;
+z-index: 2000;
 }
 </style>
 </head>
@@ -199,13 +227,28 @@ align-items: center;
 </div>
 
 <!-- 🟦 TASKBAR -->
-<div class="taskbar">
-<div class="window" style="margin:0; width:100%;">
-<div class="window-body taskbar-inner">
-<button>Start</button>
-<span>DUSTHECAT</span>
-<span id="clock"></span>
+<div id="taskbar">
+<div class="start-button">
+<button onclick="toggleStartMenu()">Start</button>
 </div>
+
+<div class="taskbar-spacer"></div>
+
+<div class="taskbar-clock">
+<div class="window">
+<div class="window-body" id="clock" style="padding:4px 10px;"></div>
+</div>
+</div>
+</div>
+
+<!-- 🟩 START MENU -->
+<div id="start-menu" class="window">
+<div class="window-body">
+<p><strong>Programs</strong></p>
+<hr>
+<p onclick="openWindow('about')">About</p>
+<p onclick="openWindow('token')">Token Info</p>
+<p onclick="openWindow('roadmap')">Roadmap</p>
 </div>
 </div>
 
@@ -234,9 +277,16 @@ now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 setInterval(updateClock, 1000);
 updateClock();
 
+/* Start Menu */
+function toggleStartMenu() {
+const menu = document.getElementById("start-menu");
+menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
 /* Window Controls */
 function openWindow(id) {
 document.getElementById(id).style.display = "block";
+document.getElementById("start-menu").style.display = "none";
 }
 function closeWindow(id) {
 document.getElementById(id).style.display = "none";
