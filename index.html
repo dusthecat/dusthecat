@@ -3,41 +3,58 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>YOURCOIN - Official Site</title>
+<title>YOURCOIN.exe</title>
 
-<!-- 98.css -->
 <link rel="stylesheet" href="https://unpkg.com/98.css" />
 
 <style>
 body {
-background: teal;
 margin: 0;
+background: teal;
 font-family: "MS Sans Serif", sans-serif;
+overflow: hidden;
 }
 
-.desktop {
-padding: 20px;
+#boot-screen {
+position: fixed;
+inset: 0;
+background: black;
+color: white;
 display: flex;
-flex-wrap: wrap;
-gap: 20px;
+align-items: center;
+justify-content: center;
+flex-direction: column;
+font-family: monospace;
+z-index: 9999;
+}
+
+#desktop {
+display: none;
+height: 100vh;
+padding: 20px;
+}
+
+.icon {
+width: 80px;
+text-align: center;
+color: white;
+cursor: pointer;
+margin-bottom: 20px;
+}
+
+.icon img {
+width: 32px;
 }
 
 .window {
-width: 420px;
+position: absolute;
+width: 400px;
 }
 
-.full-width {
-width: 100%;
-}
-
-footer {
+.taskbar {
 position: fixed;
 bottom: 0;
 width: 100%;
-}
-
-.taskbar-spacer {
-height: 40px;
 }
 
 .contract-box {
@@ -53,149 +70,152 @@ border: 1px inset #000;
 
 <body>
 
-<div class="desktop">
+<!-- 🔹 Boot Screen -->
+<div id="boot-screen">
+<h2>Starting Windows 98...</h2>
+<p>Launching YOURCOIN.exe</p>
+</div>
+
+<audio id="startup-sound">
+<source src="https://www.myinstants.com/media/sounds/windows-98-startup.mp3">
+</audio>
+
+<!-- 🔹 Desktop -->
+<div id="desktop">
+
+<!-- Desktop Icons -->
+<div class="icon" onclick="openWindow('about')">
+<img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
+<div>About</div>
+</div>
+
+<div class="icon" onclick="openWindow('token')">
+<img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png">
+<div>Token.txt</div>
+</div>
+
+<div class="icon" onclick="openWindow('roadmap')">
+<img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
+<div>Roadmap</div>
+</div>
 
 <!-- About Window -->
-<div class="window">
-<div class="title-bar">
+<div id="about" class="window" style="top:80px; left:200px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">About YOURCOIN.exe</div>
 <div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
+<button onclick="closeWindow('about')"></button>
 </div>
 </div>
 <div class="window-body">
-<p><strong>YOURCOIN</strong> is the most powerful meme coin ever launched on Pump.fun.</p>
-<p>Born on the blockchain. Raised by the internet.</p>
-<button>Buy Now</button>
+<p><strong>YOURCOIN</strong> is the most powerful meme coin on Pump.fun.</p>
+<button onclick="alert('YOU ARE EARLY.')">Buy Now</button>
 </div>
 </div>
 
-<!-- Token Info Window -->
-<div class="window">
-<div class="title-bar">
-<div class="title-bar-text">Token Info.txt</div>
+<!-- Token Window -->
+<div id="token" class="window" style="top:120px; left:300px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
+<div class="title-bar-text">Token Info</div>
 <div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
+<button onclick="closeWindow('token')"></button>
 </div>
 </div>
 <div class="window-body">
 <ul>
-<li><strong>Chain:</strong> Solana</li>
-<li><strong>Supply:</strong> 1,000,000,000</li>
-<li><strong>Tax:</strong> 0%</li>
-<li><strong>LP:</strong> Burned 🔥</li>
+<li>Supply: 1,000,000,000</li>
+<li>Tax: 0%</li>
+<li>Chain: Solana</li>
 </ul>
-
-<p><strong>Contract Address:</strong></p>
-<div class="contract-box">
-PASTE_YOUR_CONTRACT_ADDRESS_HERE
-</div>
+<p>Contract:</p>
+<div class="contract-box">PASTE_CONTRACT_ADDRESS</div>
 </div>
 </div>
 
 <!-- Roadmap Window -->
-<div class="window">
-<div class="title-bar">
+<div id="roadmap" class="window" style="top:160px; left:400px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Roadmap.doc</div>
 <div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
+<button onclick="closeWindow('roadmap')"></button>
 </div>
 </div>
 <div class="window-body">
 <ol>
-<li>Launch on Pump.fun</li>
-<li>Community Takeover</li>
-<li>Twitter Raids</li>
-<li>Memes Go Viral</li>
-<li>World Domination</li>
+<li>Launch</li>
+<li>Memes</li>
+<li>Viral</li>
+<li>Billions</li>
 </ol>
 </div>
 </div>
 
-<!-- How To Buy Window -->
-<div class="window">
-<div class="title-bar">
-<div class="title-bar-text">HowToBuy.exe</div>
-<div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
-</div>
-</div>
-<div class="window-body">
-<ol>
-<li>Download Phantom Wallet</li>
-<li>Buy SOL</li>
-<li>Go to Pump.fun</li>
-<li>Paste contract address</li>
-<li>APE responsibly</li>
-</ol>
-</div>
 </div>
 
-<!-- Social Links Window -->
-<div class="window full-width">
-<div class="title-bar">
-<div class="title-bar-text">Links & Resources</div>
-<div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
-</div>
-</div>
-<div class="window-body">
-<button onclick="window.open('https://pump.fun', '_blank')">Pump.fun</button>
-<button onclick="window.open('https://twitter.com', '_blank')">Twitter</button>
-<button onclick="window.open('https://t.me', '_blank')">Telegram</button>
-</div>
-</div>
-
-<!-- Disclaimer Window -->
-<div class="window full-width">
-<div class="title-bar">
-<div class="title-bar-text">Disclaimer.txt</div>
-<div class="title-bar-controls">
-<button aria-label="Minimize"></button>
-<button aria-label="Maximize"></button>
-<button aria-label="Close"></button>
-</div>
-</div>
-<div class="window-body">
-<p>This is a meme coin. Not financial advice.</p>
-<p>Crypto is volatile. Only invest what you can afford to lose.</p>
-</div>
-</div>
-
-</div>
-
-<div class="taskbar-spacer"></div>
-
-<!-- Windows 98 Style Taskbar -->
-<footer>
+<!-- 🔹 Taskbar -->
+<div class="taskbar">
 <div class="window" style="margin:0; width:100%;">
-<div class="window-body" style="display:flex; justify-content:space-between; align-items:center;">
+<div class="window-body" style="display:flex; justify-content:space-between;">
 <button>Start</button>
-<span>YOURCOIN Official Website</span>
+<span>YOURCOIN OS</span>
 <span id="clock"></span>
 </div>
 </div>
-</footer>
+</div>
 
 <script>
+// Boot sequence
+window.onload = function() {
+setTimeout(() => {
+document.getElementById("boot-screen").style.display = "none";
+document.getElementById("desktop").style.display = "block";
+document.getElementById("startup-sound").play();
+alert("Welcome to YOURCOIN OS");
+}, 2500);
+};
+
+// Clock
 function updateClock() {
 const now = new Date();
 document.getElementById("clock").textContent =
-now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 }
-
 setInterval(updateClock, 1000);
 updateClock();
+
+// Open/Close Windows
+function openWindow(id) {
+document.getElementById(id).style.display = "block";
+}
+
+function closeWindow(id) {
+document.getElementById(id).style.display = "none";
+}
+
+// Dragging Logic
+let dragItem = null;
+let offsetX = 0;
+let offsetY = 0;
+
+function dragStart(e, element) {
+dragItem = element;
+offsetX = e.clientX - element.offsetLeft;
+offsetY = e.clientY - element.offsetTop;
+document.onmousemove = drag;
+document.onmouseup = dragEnd;
+}
+
+function drag(e) {
+if (dragItem) {
+dragItem.style.left = (e.clientX - offsetX) + "px";
+dragItem.style.top = (e.clientY - offsetY) + "px";
+}
+}
+
+function dragEnd() {
+document.onmousemove = null;
+dragItem = null;
+}
 </script>
 
 </body>
