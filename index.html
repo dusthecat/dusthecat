@@ -26,7 +26,6 @@ display: flex;
 justify-content: center;
 align-items: center;
 z-index: 9999;
-overflow: hidden;
 }
 
 .boot-container {
@@ -64,25 +63,30 @@ font-size: 14px;
 #desktop {
 display: none;
 height: calc(100vh - 40px);
-padding: 0;
 position: relative;
 overflow: hidden;
 }
 
-/* A layer so we can scatter icons anywhere */
+/* fixed left column icons */
+.fixed-icons {
+position: absolute;
+top: 20px;
+left: 20px;
+}
+
+/* scattered icon layer */
 #icon-layer {
 position: absolute;
 inset: 0;
 }
 
-/* Desktop icons */
 .icon {
-position: absolute;
 width: 80px;
 text-align: center;
 color: white;
 cursor: pointer;
 user-select: none;
+position: absolute;
 }
 
 .icon img {
@@ -133,13 +137,14 @@ border: 1px inset #000;
 #taskbar {
 position: fixed;
 bottom: 0;
-width: 100%;
+left: 0;
+right: 0;
 height: 40px;
 background: #c0c0c0;
 border-top: 2px solid white;
 display: flex;
 align-items: center;
-padding: 0 5px;
+padding: 0 6px;
 box-sizing: border-box;
 z-index: 1000;
 }
@@ -150,11 +155,17 @@ padding: 2px 12px;
 }
 
 .taskbar-spacer {
-flex-grow: 1;
+flex: 1;
 }
 
-.taskbar-clock {
-margin-right: 5px;
+.taskbar-clock .window {
+margin: 0;
+}
+
+.taskbar-clock .window-body {
+padding: 3px 8px;
+min-width: 60px;
+text-align: center;
 }
 
 /* ---------------- START MENU ---------------- */
@@ -189,74 +200,38 @@ z-index: 2000;
 <!-- DESKTOP -->
 <div id="desktop">
 
-<!-- Floating cat -->
 <img src="./dusthecat.png" id="floating-cat" alt="DUSTHECAT">
 
-<!-- Icons get scattered inside this layer -->
+<!-- Fixed Icons (original positions preserved) -->
+<div class="fixed-icons">
+<div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('about')">
+<img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
+<div>About</div>
+</div>
+
+<div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('token')">
+<img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png">
+<div>Token.txt</div>
+</div>
+
+<div class="icon" style="position:relative;" ondblclick="openWindow('roadmap')">
+<img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
+<div>Roadmap</div>
+</div>
+</div>
+
+<!-- Random Media Icons -->
 <div id="icon-layer"></div>
 
-<!-- About Window -->
-<div id="about" class="window" style="top:120px; left:220px; display:none;">
-<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
-<div class="title-bar-text">About DUSTHECAT.exe</div>
-<div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('about')"></button>
-</div>
-</div>
-<div class="window-body">
-<p><strong>DUSTHECAT</strong> is the most powerful meme coin on Pump.fun.</p>
-<button onclick="alert('YOU ARE EARLY.')">Buy Now</button>
-</div>
-</div>
-
-<!-- Token Window -->
-<div id="token" class="window" style="top:150px; left:320px; display:none;">
-<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
-<div class="title-bar-text">Token Info</div>
-<div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('token')"></button>
-</div>
-</div>
-<div class="window-body">
-<ul>
-<li>Supply: 1,000,000,000</li>
-<li>Tax: 0%</li>
-<li>Chain: Solana</li>
-</ul>
-<p>Contract:</p>
-<div class="contract-box">PASTE_CONTRACT_ADDRESS</div>
-</div>
-</div>
-
-<!-- Roadmap Window -->
-<div id="roadmap" class="window" style="top:180px; left:420px; display:none;">
-<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
-<div class="title-bar-text">Roadmap.doc</div>
-<div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('roadmap')"></button>
-</div>
-</div>
-<div class="window-body">
-<ol>
-<li>Launch</li>
-<li>Memes</li>
-<li>Viral</li>
-<li>Billions</li>
-</ol>
-</div>
-</div>
-
-<!-- Media Viewer Window (re-used for pics/gifs/videos) -->
-<div id="mediaViewer" class="window media-window" style="top:110px; left:160px; display:none;">
+<!-- Media Viewer -->
+<div id="mediaViewer" class="window media-window" style="top:120px; left:200px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text" id="mediaTitle">Media Viewer</div>
 <div class="title-bar-controls">
 <button aria-label="Close" onclick="closeMedia()"></button>
 </div>
 </div>
-<div class="window-body" id="mediaBody">
-<!-- Filled by JS -->
-</div>
+<div class="window-body" id="mediaBody"></div>
 </div>
 
 </div>
@@ -266,10 +241,12 @@ z-index: 2000;
 <div class="start-button">
 <button onclick="toggleStartMenu()">Start</button>
 </div>
+
 <div class="taskbar-spacer"></div>
+
 <div class="taskbar-clock">
 <div class="window">
-<div class="window-body" id="clock" style="padding:4px 10px;"></div>
+<div class="window-body" id="clock"></div>
 </div>
 </div>
 </div>
@@ -286,7 +263,8 @@ z-index: 2000;
 </div>
 
 <script>
-/* ---------------- BOOT ANIMATION ---------------- */
+
+/* ---------------- BOOT ---------------- */
 let progress = 0;
 const bootInterval = setInterval(() => {
 progress += 4;
@@ -297,9 +275,8 @@ setTimeout(() => {
 document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
 document.getElementById("startup-sound").play();
-
 startCatAnimation();
-buildAndScatterIcons();
+scatterIcons();
 }, 500);
 }
 }, 100);
@@ -319,63 +296,66 @@ const menu = document.getElementById("start-menu");
 menu.style.display = menu.style.display === "none" ? "block" : "none";
 }
 
-/* close start menu when clicking elsewhere */
-document.addEventListener("mousedown", (e) => {
-const menu = document.getElementById("start-menu");
-const startButton = document.querySelector(".start-button button");
-if (menu.style.display === "block" && !menu.contains(e.target) && e.target !== startButton) {
-menu.style.display = "none";
-}
+/* ---------------- MEDIA ICONS ---------------- */
+
+const mediaIcons = [
+{ label: "meme1.gif", type: "image", url: "REPLACE_URL_1" },
+{ label: "meme2.png", type: "image", url: "REPLACE_URL_2" },
+{ label: "clip1.mp4", type: "video", url: "REPLACE_URL_3" },
+{ label: "clip2.mp4", type: "video", url: "REPLACE_URL_4" },
+{ label: "poster.jpg", type: "image", url: "REPLACE_URL_5" },
+{ label: "hype.gif", type: "image", url: "REPLACE_URL_6" }
+];
+
+function scatterIcons() {
+const layer = document.getElementById("icon-layer");
+const desktop = document.getElementById("desktop");
+const padding = 20;
+
+mediaIcons.forEach(item => {
+const icon = document.createElement("div");
+icon.className = "icon";
+icon.innerHTML = `
+<img src="https://win98icons.alexmeub.com/icons/png/image_old-0.png">
+<div>${item.label}</div>
+`;
+
+icon.ondblclick = () => openMedia(item.label, item.url, item.type);
+
+icon.style.left = Math.random() * (desktop.clientWidth - 100) + "px";
+icon.style.top = Math.random() * (desktop.clientHeight - 100) + "px";
+
+layer.appendChild(icon);
 });
-
-/* ---------------- WINDOW CONTROLS ---------------- */
-function openWindow(id) {
-document.getElementById(id).style.display = "block";
-document.getElementById("start-menu").style.display = "none";
-bringToFront(document.getElementById(id));
-}
-function closeWindow(id) {
-document.getElementById(id).style.display = "none";
 }
 
-/* ---------------- Z-ORDER (BRING TO FRONT) ---------------- */
-let topZ = 10;
-function bringToFront(el) {
-topZ += 1;
-el.style.zIndex = topZ;
+/* ---------------- MEDIA VIEWER ---------------- */
+
+function openMedia(title, url, type) {
+const viewer = document.getElementById("mediaViewer");
+const body = document.getElementById("mediaBody");
+document.getElementById("mediaTitle").textContent = title;
+
+if (type === "video") {
+body.innerHTML = `<video class="media-content" controls autoplay>
+<source src="${url}">
+</video>`;
+} else {
+body.innerHTML = `<img class="media-content" src="${url}">`;
 }
 
-/* ---------------- DRAGGING ---------------- */
-let dragItem = null;
-let offsetX = 0;
-let offsetY = 0;
-
-function dragStart(e, element) {
-dragItem = element;
-bringToFront(element);
-offsetX = e.clientX - element.offsetLeft;
-offsetY = e.clientY - element.offsetTop;
-document.onmousemove = drag;
-document.onmouseup = dragEnd;
-}
-function drag(e) {
-if (dragItem) {
-dragItem.style.left = (e.clientX - offsetX) + "px";
-dragItem.style.top = (e.clientY - offsetY) + "px";
-}
-}
-function dragEnd() {
-document.onmousemove = null;
-dragItem = null;
+viewer.style.display = "block";
 }
 
-/* ---------------- FLOATING CAT ANIMATION ---------------- */
+function closeMedia() {
+document.getElementById("mediaViewer").style.display = "none";
+document.getElementById("mediaBody").innerHTML = "";
+}
+
+/* ---------------- CAT ---------------- */
 function startCatAnimation() {
 const cat = document.getElementById("floating-cat");
-let x = 100;
-let y = 100;
-let dx = 2;
-let dy = 2;
+let x = 100, y = 100, dx = 2, dy = 2;
 
 function animate() {
 const desktop = document.getElementById("desktop");
@@ -396,145 +376,6 @@ requestAnimationFrame(animate);
 animate();
 }
 
-/* ---------------- DESKTOP ICONS ---------------- */
-/*
-Replace the mediaUrl values with your own:
-- Images/GIFs: https://.../file.png or .jpg or .gif or .webp
-- Videos: https://.../file.mp4 (or other formats supported by browsers)
-
-For videos you can optionally set "type": "video".
-*/
-const desktopIcons = [
-// Core windows (open existing windows)
-{ label: "About", iconUrl: "https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png", action: () => openWindow("about") },
-{ label: "Token.txt", iconUrl: "https://win98icons.alexmeub.com/icons/png/notepad-0.png", action: () => openWindow("token") },
-{ label: "Roadmap", iconUrl: "https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png", action: () => openWindow("roadmap") },
-
-// Media icons (placeholders you will replace)
-{ label: "meme_01.gif", iconUrl: "https://win98icons.alexmeub.com/icons/png/camera-0.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_1" },
-{ label: "meme_02.png", iconUrl: "https://win98icons.alexmeub.com/icons/png/image_old-0.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_2" },
-{ label: "clip_01.mp4", iconUrl: "https://win98icons.alexmeub.com/icons/png/media_player-0.png", type: "video", mediaUrl: "REPLACE_WITH_VIDEO_URL_1" },
-{ label: "clip_02.mp4", iconUrl: "https://win98icons.alexmeub.com/icons/png/media_player-0.png", type: "video", mediaUrl: "REPLACE_WITH_VIDEO_URL_2" },
-{ label: "poster.jpg", iconUrl: "https://win98icons.alexmeub.com/icons/png/paint_file-0.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_3" },
-{ label: "gif_party.gif", iconUrl: "https://win98icons.alexmeub.com/icons/png/world-2.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_4" },
-{ label: "trailer.mp4", iconUrl: "https://win98icons.alexmeub.com/icons/png/media_player-0.png", type: "video", mediaUrl: "REPLACE_WITH_VIDEO_URL_3" },
-{ label: "wallpaper.png", iconUrl: "https://win98icons.alexmeub.com/icons/png/desktop-0.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_5" },
-{ label: "hype.gif", iconUrl: "https://win98icons.alexmeub.com/icons/png/message_envelope_open-0.png", type: "image", mediaUrl: "REPLACE_WITH_IMAGE_OR_GIF_URL_6" }
-];
-
-function buildAndScatterIcons() {
-const layer = document.getElementById("icon-layer");
-layer.innerHTML = "";
-
-const desktop = document.getElementById("desktop");
-const padding = 16;
-
-// approximate icon footprint
-const iconW = 90;
-const iconH = 90;
-
-// keep icons away from top-left a bit, and away from cat start area
-const minX = padding;
-const minY = padding;
-
-const maxX = desktop.clientWidth - iconW - padding;
-const maxY = desktop.clientHeight - iconH - padding;
-
-const used = [];
-
-desktopIcons.forEach((item) => {
-const el = document.createElement("div");
-el.className = "icon";
-el.innerHTML = `
-<img src="${item.iconUrl}" alt="">
-<div>${item.label}</div>
-`;
-
-el.addEventListener("dblclick", (e) => {
-e.stopPropagation();
-if (item.action) {
-item.action();
-return;
-}
-if (item.mediaUrl) {
-openMedia(item.label, item.mediaUrl, item.type || "image");
-}
-});
-
-// random placement with simple collision avoidance
-let x, y, tries = 0;
-do {
-x = randInt(minX, Math.max(minX, maxX));
-y = randInt(minY, Math.max(minY, maxY));
-tries++;
-} while (collides(x, y, used, iconW, iconH) && tries < 80);
-
-used.push({ x, y, w: iconW, h: iconH });
-el.style.left = x + "px";
-el.style.top = y + "px";
-
-layer.appendChild(el);
-});
-}
-
-function randInt(min, max) {
-return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function collides(x, y, used, w, h) {
-// basic AABB overlap check with a tiny gap
-const gap = 6;
-for (const u of used) {
-const overlap = !(
-x + w + gap < u.x ||
-x > u.x + u.w + gap ||
-y + h + gap < u.y ||
-y > u.y + u.h + gap
-);
-if (overlap) return true;
-}
-return false;
-}
-
-/* ---------------- MEDIA VIEWER ---------------- */
-function openMedia(title, url, type) {
-const w = document.getElementById("mediaViewer");
-const body = document.getElementById("mediaBody");
-const t = document.getElementById("mediaTitle");
-
-t.textContent = title;
-
-if (type === "video") {
-body.innerHTML = `
-<video class="media-content" controls autoplay>
-<source src="${url}">
-Your browser does not support the video tag.
-</video>
-<div style="margin-top:8px; font-size:12px;">
-Tip: If a video doesn’t load, check the URL and CORS permissions.
-</div>
-`;
-} else {
-body.innerHTML = `
-<img class="media-content" src="${url}" alt="${title}">
-<div style="margin-top:8px; font-size:12px;">
-If the image/gif doesn’t load, check the URL.
-</div>
-`;
-}
-
-w.style.display = "block";
-w.style.left = "160px";
-w.style.top = "110px";
-bringToFront(w);
-}
-
-function closeMedia() {
-const w = document.getElementById("mediaViewer");
-const body = document.getElementById("mediaBody");
-w.style.display = "none";
-body.innerHTML = "";
-}
 </script>
 
 </body>
