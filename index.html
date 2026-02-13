@@ -20,26 +20,26 @@ overflow: hidden;
 #boot-screen {
 position: fixed;
 inset: 0;
-background: black;
-color: white;
+background: url("48C2F897-67D0-43BA-ACAC-E470971D8F86.jpeg") center center no-repeat;
+background-size: cover;
 display: flex;
-flex-direction: column;
 justify-content: center;
 align-items: center;
-font-family: sans-serif;
 z-index: 9999;
 }
 
-.boot-logo {
-font-size: 32px;
-font-weight: bold;
-margin-bottom: 20px;
+.boot-container {
+margin-top: 260px;
+display: flex;
+flex-direction: column;
+align-items: center;
 }
 
 .boot-bar {
-width: 300px;
+width: 320px;
 height: 20px;
-border: 2px solid white;
+border: 2px solid black;
+background: #c0c0c0;
 padding: 2px;
 }
 
@@ -47,6 +47,12 @@ padding: 2px;
 height: 100%;
 width: 0%;
 background: linear-gradient(90deg, #000080, #1084d0);
+}
+
+.boot-text {
+margin-top: 15px;
+color: black;
+font-size: 14px;
 }
 
 /* ---------------- DESKTOP ---------------- */
@@ -92,7 +98,6 @@ position: fixed;
 bottom: 0;
 width: 100%;
 }
-
 .taskbar-inner {
 display: flex;
 justify-content: space-between;
@@ -103,23 +108,24 @@ align-items: center;
 
 <body>
 
-<!-- 🔵 Windows 98 Boot Screen -->
+<!-- 🔵 BOOT SCREEN -->
 <div id="boot-screen">
-<div class="boot-logo">Microsoft Windows 98</div>
+<div class="boot-container">
 <div class="boot-bar">
 <div class="boot-progress" id="boot-progress"></div>
 </div>
-<p style="margin-top:20px;">Starting YOURCOIN OS...</p>
+<div class="boot-text">Starting YOURCOIN OS...</div>
+</div>
 </div>
 
 <audio id="startup-sound">
 <source src="https://www.myinstants.com/media/sounds/windows-98-startup.mp3">
 </audio>
 
-<!-- 🖥 Desktop -->
+<!-- 🖥 DESKTOP -->
 <div id="desktop">
 
-<!-- Icons -->
+<!-- Desktop Icons -->
 <div class="icon" onclick="openWindow('about')">
 <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
 <div>About</div>
@@ -136,11 +142,11 @@ align-items: center;
 </div>
 
 <!-- About Window -->
-<div id="about" class="window" style="top:100px; left:200px; display:none;">
+<div id="about" class="window" style="top:120px; left:220px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">About YOURCOIN.exe</div>
 <div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('about')">X</button>
+<button aria-label="Close" onclick="closeWindow('about')"></button>
 </div>
 </div>
 <div class="window-body">
@@ -150,11 +156,11 @@ align-items: center;
 </div>
 
 <!-- Token Window -->
-<div id="token" class="window" style="top:130px; left:300px; display:none;">
+<div id="token" class="window" style="top:150px; left:320px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Token Info</div>
 <div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('token')">X</button>
+<button aria-label="Close" onclick="closeWindow('token')"></button>
 </div>
 </div>
 <div class="window-body">
@@ -169,11 +175,11 @@ align-items: center;
 </div>
 
 <!-- Roadmap Window -->
-<div id="roadmap" class="window" style="top:160px; left:400px; display:none;">
+<div id="roadmap" class="window" style="top:180px; left:420px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Roadmap.doc</div>
 <div class="title-bar-controls">
-<button aria-label="Close" onclick="closeWindow('roadmap')">X</button>
+<button aria-label="Close" onclick="closeWindow('roadmap')"></button>
 </div>
 </div>
 <div class="window-body">
@@ -188,7 +194,7 @@ align-items: center;
 
 </div>
 
-<!-- 🟦 Taskbar -->
+<!-- 🟦 TASKBAR -->
 <div class="taskbar">
 <div class="window" style="margin:0; width:100%;">
 <div class="window-body taskbar-inner">
@@ -203,7 +209,7 @@ align-items: center;
 /* Boot Animation */
 let progress = 0;
 const bootInterval = setInterval(() => {
-progress += 5;
+progress += 4;
 document.getElementById("boot-progress").style.width = progress + "%";
 if (progress >= 100) {
 clearInterval(bootInterval);
@@ -228,7 +234,6 @@ updateClock();
 function openWindow(id) {
 document.getElementById(id).style.display = "block";
 }
-
 function closeWindow(id) {
 document.getElementById(id).style.display = "none";
 }
@@ -245,14 +250,12 @@ offsetY = e.clientY - element.offsetTop;
 document.onmousemove = drag;
 document.onmouseup = dragEnd;
 }
-
 function drag(e) {
 if (dragItem) {
 dragItem.style.left = (e.clientX - offsetX) + "px";
 dragItem.style.top = (e.clientY - offsetY) + "px";
 }
 }
-
 function dragEnd() {
 document.onmousemove = null;
 dragItem = null;
