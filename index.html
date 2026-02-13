@@ -111,6 +111,14 @@ width: 520px;
 z-index: 5;
 }
 
+.media-content {
+width: 100%;
+max-height: 60vh;
+border: 1px inset #000;
+background: #fff;
+display: block;
+}
+
 /* ---------------- TASKBAR ---------------- */
 
 #taskbar {
@@ -128,6 +136,11 @@ box-sizing: border-box;
 z-index: 1000;
 }
 
+.start-button button {
+font-weight: bold;
+padding: 2px 12px;
+}
+
 .taskbar-spacer {
 flex: 1;
 }
@@ -137,6 +150,8 @@ padding: 3px 8px;
 min-width: 60px;
 text-align: center;
 }
+
+/* ---------------- START MENU ---------------- */
 
 #start-menu {
 display: none;
@@ -168,7 +183,7 @@ z-index: 2000;
 <!-- DESKTOP -->
 <div id="desktop">
 
-<img src="./floatingdus.png" id="floating-cat">
+<img src="./floatingdus.png" id="floating-cat" alt="DUSTHECAT">
 
 <!-- Fixed Icons -->
 <div class="fixed-icons">
@@ -191,6 +206,17 @@ z-index: 2000;
 </div>
 
 <div id="icon-layer"></div>
+
+<!-- Media Viewer -->
+<div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
+<div class="title-bar-text" id="mediaTitle">Media Viewer</div>
+<div class="title-bar-controls">
+<button aria-label="Close" onclick="closeMedia()"></button>
+</div>
+</div>
+<div class="window-body" id="mediaBody"></div>
+</div>
 
 <!-- About Window -->
 <div id="about" class="window" style="top:120px; left:250px; display:none;">
@@ -291,9 +317,9 @@ setInterval(updateClock, 1000);
 updateClock();
 
 /* ---------------- START MENU ---------------- */
-function toggleStartMenu() {
-const menu = document.getElementById("start-menu");
-menu.style.display = menu.style.display === "none" ? "block" : "none";
+function toggleStartMenu(){
+const menu=document.getElementById("start-menu");
+menu.style.display=menu.style.display==="none"?"block":"none";
 }
 
 /* ---------------- WINDOW CONTROL ---------------- */
@@ -305,7 +331,48 @@ function closeWindow(id){
 document.getElementById(id).style.display="none";
 }
 
-/* ---------------- NON OVERLAP SCATTER ---------------- */
+/* ---------------- MEDIA VIEWER ---------------- */
+function openMedia(title,url,type){
+const viewer=document.getElementById("mediaViewer");
+const body=document.getElementById("mediaBody");
+document.getElementById("mediaTitle").textContent=title;
+if(type==="video"){
+body.innerHTML=`<video class="media-content" controls autoplay><source src="${url}"></video>`;
+}else{
+body.innerHTML=`<img class="media-content" src="${url}">`;
+}
+viewer.style.display="block";
+}
+function closeMedia(){
+document.getElementById("mediaViewer").style.display="none";
+document.getElementById("mediaBody").innerHTML="";
+}
+
+/* ---------------- NON-OVERLAP SCATTER ---------------- */
+
+const mediaIcons = [
+{ label: "applepic.png", type: "image", url: "./media/applepic.jpg" },
+{ label: "detective.png", type: "image", url: "./media/detective.jpg" },
+{ label: "detective2.png", type: "image", url: "./media/detective2.jpg" },
+{ label: "detective3.png", type: "image", url: "./media/detective3.jpg" },
+{ label: "ily.png", type: "image", url: "./media/ily.jpg" },
+{ label: "lilypad.png", type: "image", url: "./media/lilypad.jpg" },
+{ label: "model.png", type: "image", url: "./media/model.jpg" },
+{ label: "model2.png", type: "image", url: "./media/model2.jpg" },
+
+{ label: "apple.mp4", type: "video", url: "./media/apple.mp4" },
+{ label: "applesauce.mp4", type: "video", url: "./media/applesauce.mp4" },
+{ label: "box.mp4", type: "video", url: "./media/box.mp4" },
+{ label: "christmas.mp4", type: "video", url: "./media/christmas.mp4" },
+{ label: "finance.mp4", type: "video", url: "./media/finance.mp4" },
+{ label: "letthatshitg.mp4", type: "video", url: "./media/letthatshitg.mp4" },
+{ label: "me.mp4", type: "video", url: "./media/me.mp4" },
+{ label: "pc.mp4", type: "video", url: "./media/pc.mp4" },
+{ label: "pizza.mp4", type: "video", url: "./media/pizza.mp4" },
+{ label: "setup.mp4", type: "video", url: "./media/setup.mp4" },
+{ label: "subway.mp4", type: "video", url: "./media/subway.mp4" },
+{ label: "vendingmachine.mp4", type: "video", url: "./media/vendingmachine.mp4" }
+];
 
 function scatterIcons(){
 const layer=document.getElementById("icon-layer");
@@ -335,7 +402,11 @@ attempts++;
 
 const icon=document.createElement("div");
 icon.className="icon";
-icon.innerHTML=`<img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png"><div>${item.label}</div>`;
+const iconImg=item.type==="image"
+? "https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png"
+: "https://win98icons.alexmeub.com/icons/png/media_player-0.png";
+icon.innerHTML=`<img src="${iconImg}"><div>${item.label}</div>`;
+icon.ondblclick=()=>openMedia(item.label,item.url,item.type);
 icon.style.left=x+"px";
 icon.style.top=y+"px";
 layer.appendChild(icon);
@@ -343,6 +414,7 @@ layer.appendChild(icon);
 }
 
 /* ---------------- CAT ---------------- */
+
 function startCatAnimation(){
 const cat=document.getElementById("floating-cat");
 let x=100,y=100,dx=2,dy=2;
