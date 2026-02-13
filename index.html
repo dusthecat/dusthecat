@@ -94,6 +94,11 @@ width: 32px;
 height: 32px;
 }
 
+/* fixed icons are relative blocks (keep your layout) */
+.fixed-icons .icon {
+position: relative;
+}
+
 /* ---------------- FLOATING CAT ---------------- */
 
 #floating-cat {
@@ -109,6 +114,14 @@ pointer-events: none;
 position: absolute;
 width: 520px;
 z-index: 5;
+}
+
+.media-content {
+width: 100%;
+max-height: 60vh;
+border: 1px inset #000;
+background: #fff;
+display: block;
 }
 
 /* ---------------- TASKBAR ---------------- */
@@ -128,6 +141,11 @@ box-sizing: border-box;
 z-index: 1000;
 }
 
+.start-button button {
+font-weight: bold;
+padding: 2px 12px;
+}
+
 .taskbar-spacer {
 flex: 1;
 }
@@ -137,6 +155,8 @@ padding: 3px 8px;
 min-width: 60px;
 text-align: center;
 }
+
+/* ---------------- START MENU ---------------- */
 
 #start-menu {
 display: none;
@@ -168,33 +188,30 @@ z-index: 2000;
 <!-- DESKTOP -->
 <div id="desktop">
 
-<img src="./floatingdus.png" id="floating-cat">
+<img src="./floatingdus.png" id="floating-cat" alt="DUSTHECAT">
 
 <!-- Fixed Icons -->
 <div class="fixed-icons">
-
-<div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('about')">
+<div class="icon" id="icon-about" style="margin-bottom:20px;">
 <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
 <div>About</div>
 </div>
 
-<div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('token')">
+<div class="icon" id="icon-token" style="margin-bottom:20px;">
 <img src="https://win98icons.alexmeub.com/icons/png/notepad-0.png">
 <div>Token.txt</div>
 </div>
 
-<div class="icon" style="position:relative;" ondblclick="openWindow('roadmap')">
+<div class="icon" id="icon-roadmap">
 <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
 <div>Roadmap</div>
 </div>
-
 </div>
 
 <div id="icon-layer"></div>
 
-<!-- Media Viewer -->
 <div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
-<div class="title-bar">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text" id="mediaTitle">Media Viewer</div>
 <div class="title-bar-controls">
 <button aria-label="Close" onclick="closeMedia()"></button>
@@ -205,20 +222,20 @@ z-index: 2000;
 
 <!-- About Window -->
 <div id="about" class="window" style="top:120px; left:250px; display:none;">
-<div class="title-bar">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">About</div>
 <div class="title-bar-controls">
 <button aria-label="Close" onclick="closeWindow('about')"></button>
 </div>
 </div>
 <div class="window-body">
-<p>Dus the cat is an original IP 3d cat created by artist and developer @Zinancho</p>
+<p>DUSTHECAT is the most powerful meme coin on Pump.fun.</p>
 </div>
 </div>
 
 <!-- Token Window -->
 <div id="token" class="window" style="top:150px; left:280px; display:none;">
-<div class="title-bar">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Token Info</div>
 <div class="title-bar-controls">
 <button aria-label="Close" onclick="closeWindow('token')"></button>
@@ -233,7 +250,7 @@ z-index: 2000;
 
 <!-- Roadmap Window -->
 <div id="roadmap" class="window" style="top:180px; left:310px; display:none;">
-<div class="title-bar">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Roadmap</div>
 <div class="title-bar-controls">
 <button aria-label="Close" onclick="closeWindow('roadmap')"></button>
@@ -242,7 +259,7 @@ z-index: 2000;
 <div class="window-body">
 <ol>
 <li>Launch</li>
-<li>Onboard the artist (Zinancho)</li>
+<li>Memes</li>
 <li>Viral</li>
 <li>Billions</li>
 </ol>
@@ -254,7 +271,7 @@ z-index: 2000;
 <!-- TASKBAR -->
 <div id="taskbar">
 <div class="start-button">
-<button onclick="toggleStartMenu()">Start</button>
+<button id="start-btn">Start</button>
 </div>
 <div class="taskbar-spacer"></div>
 <div class="taskbar-clock">
@@ -267,14 +284,13 @@ z-index: 2000;
 <!-- START MENU -->
 <div id="start-menu" class="window">
 <div class="window-body">
-<p onclick="openWindow('about')" style="cursor:pointer;">About</p>
-<p onclick="openWindow('token')" style="cursor:pointer;">Token Info</p>
-<p onclick="openWindow('roadmap')" style="cursor:pointer;">Roadmap</p>
+<p id="menu-about" style="cursor:pointer;">About</p>
+<p id="menu-token" style="cursor:pointer;">Token Info</p>
+<p id="menu-roadmap" style="cursor:pointer;">Roadmap</p>
 </div>
 </div>
 
 <script>
-
 /* ---------------- BOOT ---------------- */
 let progress = 0;
 const bootInterval = setInterval(() => {
@@ -286,8 +302,11 @@ setTimeout(() => {
 document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
 document.getElementById("startup-sound").play();
+
 startCatAnimation();
-setTimeout(scatterIcons, 100);
+
+// IMPORTANT: wait 1 tick so desktop dimensions are correct
+setTimeout(() => scatterIcons(), 120);
 }, 500);
 }
 }, 100);
@@ -303,21 +322,54 @@ updateClock();
 
 /* ---------------- START MENU ---------------- */
 function toggleStartMenu(){
-const menu=document.getElementById("start-menu");
-menu.style.display=menu.style.display==="none"?"block":"none";
+const menu = document.getElementById("start-menu");
+menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
+
+/* close start menu when clicking elsewhere */
+document.addEventListener("mousedown", (e) => {
+const menu = document.getElementById("start-menu");
+const startBtn = document.getElementById("start-btn");
+if (menu.style.display === "block" && !menu.contains(e.target) && e.target !== startBtn) {
+menu.style.display = "none";
+}
+});
 
 /* ---------------- WINDOW CONTROL ---------------- */
 function openWindow(id){
-document.getElementById(id).style.display="block";
-document.getElementById("start-menu").style.display="none";
+const el = document.getElementById(id);
+if (!el) return;
+el.style.display = "block";
+document.getElementById("start-menu").style.display = "none";
 }
 function closeWindow(id){
-document.getElementById(id).style.display="none";
+const el = document.getElementById(id);
+if (!el) return;
+el.style.display = "none";
+}
+
+/* ---------------- MEDIA VIEWER ---------------- */
+function openMedia(title, url, type) {
+const viewer = document.getElementById("mediaViewer");
+const body = document.getElementById("mediaBody");
+document.getElementById("mediaTitle").textContent = title;
+
+if (type === "video") {
+body.innerHTML = `<video class="media-content" controls autoplay>
+<source src="${url}">
+</video>`;
+} else {
+body.innerHTML = `<img class="media-content" src="${url}">`;
+}
+
+viewer.style.display = "block";
+}
+function closeMedia() {
+document.getElementById("mediaViewer").style.display = "none";
+document.getElementById("mediaBody").innerHTML = "";
 }
 
 /* ---------------- MEDIA DATA ---------------- */
-
 const mediaIcons = [
 { label: "applepic.png", type: "image", url: "./media/applepic.jpg" },
 { label: "detective.png", type: "image", url: "./media/detective.jpg" },
@@ -327,6 +379,7 @@ const mediaIcons = [
 { label: "lilypad.png", type: "image", url: "./media/lilypad.jpg" },
 { label: "model.png", type: "image", url: "./media/model.jpg" },
 { label: "model2.png", type: "image", url: "./media/model2.jpg" },
+
 { label: "apple.mp4", type: "video", url: "./media/apple.mp4" },
 { label: "applesauce.mp4", type: "video", url: "./media/applesauce.mp4" },
 { label: "box.mp4", type: "video", url: "./media/box.mp4" },
@@ -341,80 +394,146 @@ const mediaIcons = [
 { label: "vendingmachine.mp4", type: "video", url: "./media/vendingmachine.mp4" }
 ];
 
-function scatterIcons(){
-const layer=document.getElementById("icon-layer");
-layer.innerHTML="";
-const desktop=document.getElementById("desktop");
-const placed=[];
-const iconWidth=80;
-const iconHeight=90;
-const padding=10;
+/* ---------------- NON-OVERLAPPING SCATTER ---------------- */
+function scatterIcons() {
+const layer = document.getElementById("icon-layer");
+const desktop = document.getElementById("desktop");
+if (!layer || !desktop) return;
 
-mediaIcons.forEach(item=>{
-let x,y,attempts=0,placedSuccessfully=false;
-while(!placedSuccessfully && attempts<200){
-x=Math.random()*(desktop.clientWidth-iconWidth);
-y=Math.random()*(desktop.clientHeight-iconHeight);
-let collision=false;
-for(let other of placed){
-if(x<other.x+iconWidth+padding &&
-x+iconWidth+padding>other.x &&
-y<other.y+iconHeight+padding &&
-y+iconHeight+padding>other.y){
-collision=true;break;
-}}
-if(!collision){placed.push({x,y});placedSuccessfully=true;}
+layer.innerHTML = "";
+
+const placed = [];
+const iconWidth = 80;
+const iconHeight = 90;
+const padding = 10;
+
+// Desktop dimensions (after render)
+const maxW = desktop.clientWidth;
+const maxH = desktop.clientHeight;
+
+mediaIcons.forEach(item => {
+let x = 0, y = 0;
+let attempts = 0;
+let placedSuccessfully = false;
+
+while (!placedSuccessfully && attempts < 400) {
+x = Math.random() * (maxW - iconWidth);
+y = Math.random() * (maxH - iconHeight);
+
+// collision check
+let collision = false;
+for (let other of placed) {
+if (
+x < other.x + iconWidth + padding &&
+x + iconWidth + padding > other.x &&
+y < other.y + iconHeight + padding &&
+y + iconHeight + padding > other.y
+) {
+collision = true;
+break;
+}
+}
+
+if (!collision) {
+placed.push({ x, y });
+placedSuccessfully = true;
+}
+
 attempts++;
 }
 
-const icon=document.createElement("div");
-icon.className="icon";
-const iconImg=item.type==="image"
+const icon = document.createElement("div");
+icon.className = "icon";
+
+const iconImg = item.type === "image"
 ? "https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png"
 : "https://win98icons.alexmeub.com/icons/png/media_player-0.png";
-icon.innerHTML=`<img src="${iconImg}"><div>${item.label}</div>`;
-icon.ondblclick=()=>openMedia(item.label,item.url,item.type);
-icon.style.left=x+"px";
-icon.style.top=y+"px";
+
+icon.innerHTML = `
+<img src="${iconImg}">
+<div>${item.label}</div>
+`;
+
+icon.style.left = x + "px";
+icon.style.top = y + "px";
+
+// Use JS events (reliable)
+icon.addEventListener("dblclick", (e) => {
+e.preventDefault();
+e.stopPropagation();
+openMedia(item.label, item.url, item.type);
+});
+
 layer.appendChild(icon);
 });
 }
 
-/* ---------------- MEDIA VIEWER ---------------- */
-function openMedia(title,url,type){
-const viewer=document.getElementById("mediaViewer");
-const body=document.getElementById("mediaBody");
-document.getElementById("mediaTitle").textContent=title;
-if(type==="video"){
-body.innerHTML=`<video class="media-content" controls autoplay><source src="${url}"></video>`;
-}else{
-body.innerHTML=`<img class="media-content" src="${url}">`;
+/* ---------------- CLICK / MENU WIRING (RELIABLE) ---------------- */
+window.addEventListener("DOMContentLoaded", () => {
+// fixed desktop icons
+const aboutIcon = document.getElementById("icon-about");
+const tokenIcon = document.getElementById("icon-token");
+const roadmapIcon = document.getElementById("icon-roadmap");
+
+aboutIcon.addEventListener("dblclick", () => openWindow("about"));
+tokenIcon.addEventListener("dblclick", () => openWindow("token"));
+roadmapIcon.addEventListener("dblclick", () => openWindow("roadmap"));
+
+// start button
+document.getElementById("start-btn").addEventListener("click", toggleStartMenu);
+
+// start menu items
+document.getElementById("menu-about").addEventListener("click", () => openWindow("about"));
+document.getElementById("menu-token").addEventListener("click", () => openWindow("token"));
+document.getElementById("menu-roadmap").addEventListener("click", () => openWindow("roadmap"));
+});
+
+/* ---------------- DRAGGING (RESTORED) ---------------- */
+let dragItem = null;
+let offsetX = 0;
+let offsetY = 0;
+
+function dragStart(e, element) {
+dragItem = element;
+offsetX = e.clientX - element.offsetLeft;
+offsetY = e.clientY - element.offsetTop;
+document.onmousemove = drag;
+document.onmouseup = dragEnd;
 }
-viewer.style.display="block";
+function drag(e) {
+if (dragItem) {
+dragItem.style.left = (e.clientX - offsetX) + "px";
+dragItem.style.top = (e.clientY - offsetY) + "px";
 }
-function closeMedia(){
-document.getElementById("mediaViewer").style.display="none";
-document.getElementById("mediaBody").innerHTML="";
+}
+function dragEnd() {
+document.onmousemove = null;
+dragItem = null;
 }
 
 /* ---------------- CAT ---------------- */
-function startCatAnimation(){
-const cat=document.getElementById("floating-cat");
-let x=100,y=100,dx=2,dy=2;
-function animate(){
-const desktop=document.getElementById("desktop");
-const maxX=desktop.clientWidth-cat.clientWidth;
-const maxY=desktop.clientHeight-cat.clientHeight;
-x+=dx;y+=dy;
-if(x<=0||x>=maxX)dx*=-1;
-if(y<=0||y>=maxY)dy*=-1;
-cat.style.left=x+"px";
-cat.style.top=y+"px";
+function startCatAnimation() {
+const cat = document.getElementById("floating-cat");
+let x = 100, y = 100, dx = 2, dy = 2;
+
+function animate() {
+const desktop = document.getElementById("desktop");
+const maxX = desktop.clientWidth - cat.clientWidth;
+const maxY = desktop.clientHeight - cat.clientHeight;
+
+x += dx;
+y += dy;
+
+if (x <= 0 || x >= maxX) dx *= -1;
+if (y <= 0 || y >= maxY) dy *= -1;
+
+cat.style.left = x + "px";
+cat.style.top = y + "px";
+
 requestAnimationFrame(animate);
 }
 animate();
 }
-
 </script>
 
 </body>
