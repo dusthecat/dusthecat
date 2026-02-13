@@ -11,6 +11,7 @@
 body {
 margin: 0;
 background: url("./desktop.jpg") center center no-repeat;
+background-size: cover;
 font-family: "MS Sans Serif", sans-serif;
 overflow: hidden;
 }
@@ -110,14 +111,6 @@ width: 520px;
 z-index: 5;
 }
 
-.media-content {
-width: 100%;
-max-height: 60vh;
-border: 1px inset #000;
-background: #fff;
-display: block;
-}
-
 /* ---------------- TASKBAR ---------------- */
 
 #taskbar {
@@ -135,11 +128,6 @@ box-sizing: border-box;
 z-index: 1000;
 }
 
-.start-button button {
-font-weight: bold;
-padding: 2px 12px;
-}
-
 .taskbar-spacer {
 flex: 1;
 }
@@ -149,8 +137,6 @@ padding: 3px 8px;
 min-width: 60px;
 text-align: center;
 }
-
-/* ---------------- START MENU ---------------- */
 
 #start-menu {
 display: none;
@@ -182,10 +168,11 @@ z-index: 2000;
 <!-- DESKTOP -->
 <div id="desktop">
 
-<img src="./floatingdus.png" id="floating-cat" alt="DUSTHECAT">
+<img src="./floatingdus.png" id="floating-cat">
 
 <!-- Fixed Icons -->
 <div class="fixed-icons">
+
 <div class="icon" style="position:relative; margin-bottom:20px;" ondblclick="openWindow('about')">
 <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
 <div>About</div>
@@ -200,18 +187,55 @@ z-index: 2000;
 <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-4.png">
 <div>Roadmap</div>
 </div>
+
 </div>
 
 <div id="icon-layer"></div>
 
-<div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
+<!-- About Window -->
+<div id="about" class="window" style="top:120px; left:250px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
-<div class="title-bar-text" id="mediaTitle">Media Viewer</div>
+<div class="title-bar-text">About</div>
 <div class="title-bar-controls">
-<button aria-label="Close" onclick="closeMedia()"></button>
+<button aria-label="Close" onclick="closeWindow('about')"></button>
 </div>
 </div>
-<div class="window-body" id="mediaBody"></div>
+<div class="window-body">
+<p>DUSTHECAT is the most powerful meme coin on Pump.fun.</p>
+</div>
+</div>
+
+<!-- Token Window -->
+<div id="token" class="window" style="top:150px; left:280px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
+<div class="title-bar-text">Token Info</div>
+<div class="title-bar-controls">
+<button aria-label="Close" onclick="closeWindow('token')"></button>
+</div>
+</div>
+<div class="window-body">
+<p>Supply: 1,000,000,000</p>
+<p>Tax: 0%</p>
+<p>Chain: Solana</p>
+</div>
+</div>
+
+<!-- Roadmap Window -->
+<div id="roadmap" class="window" style="top:180px; left:310px; display:none;">
+<div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
+<div class="title-bar-text">Roadmap</div>
+<div class="title-bar-controls">
+<button aria-label="Close" onclick="closeWindow('roadmap')"></button>
+</div>
+</div>
+<div class="window-body">
+<ol>
+<li>Launch</li>
+<li>Memes</li>
+<li>Viral</li>
+<li>Billions</li>
+</ol>
+</div>
 </div>
 
 </div>
@@ -232,8 +256,6 @@ z-index: 2000;
 <!-- START MENU -->
 <div id="start-menu" class="window">
 <div class="window-body">
-<p><strong>Programs</strong></p>
-<hr>
 <p onclick="openWindow('about')" style="cursor:pointer;">About</p>
 <p onclick="openWindow('token')" style="cursor:pointer;">Token Info</p>
 <p onclick="openWindow('roadmap')" style="cursor:pointer;">Roadmap</p>
@@ -254,7 +276,7 @@ document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
 document.getElementById("startup-sound").play();
 startCatAnimation();
-scatterIcons();
+setTimeout(scatterIcons, 100);
 }, 500);
 }
 }, 100);
@@ -268,141 +290,71 @@ now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ---------------- MEDIA DATA ---------------- */
-
-const mediaIcons = [
-{ label: "applepic.png", type: "image", url: "./media/applepic.jpg" },
-{ label: "detective.png", type: "image", url: "./media/detective.jpg" },
-{ label: "detective2.png", type: "image", url: "./media/detective2.jpg" },
-{ label: "detective3.png", type: "image", url: "./media/detective3.jpg" },
-{ label: "ily.png", type: "image", url: "./media/ily.jpg" },
-{ label: "lilypad.png", type: "image", url: "./media/lilypad.jpg" },
-{ label: "model.png", type: "image", url: "./media/model.jpg" },
-{ label: "model2.png", type: "image", url: "./media/model2.jpg" },
-
-{ label: "apple.mp4", type: "video", url: "./media/apple.mp4" },
-{ label: "applesauce.mp4", type: "video", url: "./media/applesauce.mp4" },
-{ label: "box.mp4", type: "video", url: "./media/box.mp4" },
-{ label: "christmas.mp4", type: "video", url: "./media/christmas.mp4" },
-{ label: "finance.mp4", type: "video", url: "./media/finance.mp4" },
-{ label: "letthatshitg.mp4", type: "video", url: "./media/letthatshitg.mp4" },
-{ label: "me.mp4", type: "video", url: "./media/me.mp4" },
-{ label: "pc.mp4", type: "video", url: "./media/pc.mp4" },
-{ label: "pizza.mp4", type: "video", url: "./media/pizza.mp4" },
-{ label: "setup.mp4", type: "video", url: "./media/setup.mp4" },
-{ label: "subway.mp4", type: "video", url: "./media/subway.mp4" },
-{ label: "vendingmachine.mp4", type: "video", url: "./media/vendingmachine.mp4" }
-];
-
-/* ---------------- NON-OVERLAPPING SCATTER ---------------- */
-
-function scatterIcons() {
-const layer = document.getElementById("icon-layer");
-const desktop = document.getElementById("desktop");
-
-const placed = [];
-const iconWidth = 80;
-const iconHeight = 90;
-const padding = 10;
-
-mediaIcons.forEach(item => {
-
-let x, y;
-let attempts = 0;
-let placedSuccessfully = false;
-
-while (!placedSuccessfully && attempts < 200) {
-
-x = Math.random() * (desktop.clientWidth - iconWidth);
-y = Math.random() * (desktop.clientHeight - iconHeight);
-
-let collision = false;
-
-for (let other of placed) {
-if (
-x < other.x + iconWidth + padding &&
-x + iconWidth + padding > other.x &&
-y < other.y + iconHeight + padding &&
-y + iconHeight + padding > other.y
-) {
-collision = true;
-break;
-}
+/* ---------------- START MENU ---------------- */
+function toggleStartMenu() {
+const menu = document.getElementById("start-menu");
+menu.style.display = menu.style.display === "none" ? "block" : "none";
 }
 
-if (!collision) {
-placed.push({ x, y });
-placedSuccessfully = true;
+/* ---------------- WINDOW CONTROL ---------------- */
+function openWindow(id){
+document.getElementById(id).style.display="block";
+document.getElementById("start-menu").style.display="none";
+}
+function closeWindow(id){
+document.getElementById(id).style.display="none";
 }
 
+/* ---------------- NON OVERLAP SCATTER ---------------- */
+
+function scatterIcons(){
+const layer=document.getElementById("icon-layer");
+layer.innerHTML="";
+const desktop=document.getElementById("desktop");
+const placed=[];
+const iconWidth=80;
+const iconHeight=90;
+const padding=10;
+
+mediaIcons.forEach(item=>{
+let x,y,attempts=0,placedSuccessfully=false;
+while(!placedSuccessfully && attempts<200){
+x=Math.random()*(desktop.clientWidth-iconWidth);
+y=Math.random()*(desktop.clientHeight-iconHeight);
+let collision=false;
+for(let other of placed){
+if(x<other.x+iconWidth+padding &&
+x+iconWidth+padding>other.x &&
+y<other.y+iconHeight+padding &&
+y+iconHeight+padding>other.y){
+collision=true;break;
+}}
+if(!collision){placed.push({x,y});placedSuccessfully=true;}
 attempts++;
 }
 
-const icon = document.createElement("div");
-icon.className = "icon";
-
-const iconImg = item.type === "image"
-? "https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png"
-: "https://win98icons.alexmeub.com/icons/png/media_player-0.png";
-
-icon.innerHTML = `
-<img src="${iconImg}">
-<div>${item.label}</div>
-`;
-
-icon.ondblclick = () => openMedia(item.label, item.url, item.type);
-
-icon.style.left = x + "px";
-icon.style.top = y + "px";
-
+const icon=document.createElement("div");
+icon.className="icon";
+icon.innerHTML=`<img src="https://win98icons.alexmeub.com/icons/png/kodak_imaging-0.png"><div>${item.label}</div>`;
+icon.style.left=x+"px";
+icon.style.top=y+"px";
 layer.appendChild(icon);
-
 });
 }
 
-/* ---------------- MEDIA VIEWER ---------------- */
-
-function openMedia(title, url, type) {
-const viewer = document.getElementById("mediaViewer");
-const body = document.getElementById("mediaBody");
-document.getElementById("mediaTitle").textContent = title;
-
-if (type === "video") {
-body.innerHTML = `<video class="media-content" controls autoplay>
-<source src="${url}">
-</video>`;
-} else {
-body.innerHTML = `<img class="media-content" src="${url}">`;
-}
-
-viewer.style.display = "block";
-}
-
-function closeMedia() {
-document.getElementById("mediaViewer").style.display = "none";
-document.getElementById("mediaBody").innerHTML = "";
-}
-
 /* ---------------- CAT ---------------- */
-
-function startCatAnimation() {
-const cat = document.getElementById("floating-cat");
-let x = 100, y = 100, dx = 2, dy = 2;
-
-function animate() {
-const desktop = document.getElementById("desktop");
-const maxX = desktop.clientWidth - cat.clientWidth;
-const maxY = desktop.clientHeight - cat.clientHeight;
-
-x += dx;
-y += dy;
-
-if (x <= 0 || x >= maxX) dx *= -1;
-if (y <= 0 || y >= maxY) dy *= -1;
-
-cat.style.left = x + "px";
-cat.style.top = y + "px";
-
+function startCatAnimation(){
+const cat=document.getElementById("floating-cat");
+let x=100,y=100,dx=2,dy=2;
+function animate(){
+const desktop=document.getElementById("desktop");
+const maxX=desktop.clientWidth-cat.clientWidth;
+const maxY=desktop.clientHeight-cat.clientHeight;
+x+=dx;y+=dy;
+if(x<=0||x>=maxX)dx*=-1;
+if(y<=0||y>=maxY)dy*=-1;
+cat.style.left=x+"px";
+cat.style.top=y+"px";
 requestAnimationFrame(animate);
 }
 animate();
@@ -412,4 +364,3 @@ animate();
 
 </body>
 </html>
-
