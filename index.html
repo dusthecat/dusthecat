@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>YOURCOIN.exe</title>
+<title>YOURCOIN OS</title>
 
 <link rel="stylesheet" href="https://unpkg.com/98.css" />
 
@@ -15,18 +15,41 @@ font-family: "MS Sans Serif", sans-serif;
 overflow: hidden;
 }
 
+/* ---------------- BOOT SCREEN ---------------- */
+
 #boot-screen {
 position: fixed;
 inset: 0;
 background: black;
 color: white;
 display: flex;
-align-items: center;
-justify-content: center;
 flex-direction: column;
-font-family: monospace;
+justify-content: center;
+align-items: center;
+font-family: sans-serif;
 z-index: 9999;
 }
+
+.boot-logo {
+font-size: 32px;
+font-weight: bold;
+margin-bottom: 20px;
+}
+
+.boot-bar {
+width: 300px;
+height: 20px;
+border: 2px solid white;
+padding: 2px;
+}
+
+.boot-progress {
+height: 100%;
+width: 0%;
+background: linear-gradient(90deg, #000080, #1084d0);
+}
+
+/* ---------------- DESKTOP ---------------- */
 
 #desktop {
 display: none;
@@ -35,26 +58,22 @@ padding: 20px;
 }
 
 .icon {
-width: 80px;
+width: 75px;
 text-align: center;
 color: white;
 cursor: pointer;
-margin-bottom: 20px;
+margin-bottom: 25px;
 }
 
 .icon img {
 width: 32px;
 }
 
+/* ---------------- WINDOWS ---------------- */
+
 .window {
 position: absolute;
 width: 400px;
-}
-
-.taskbar {
-position: fixed;
-bottom: 0;
-width: 100%;
 }
 
 .contract-box {
@@ -65,25 +84,42 @@ background: #fff;
 padding: 6px;
 border: 1px inset #000;
 }
+
+/* ---------------- TASKBAR ---------------- */
+
+.taskbar {
+position: fixed;
+bottom: 0;
+width: 100%;
+}
+
+.taskbar-inner {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
 </style>
 </head>
 
 <body>
 
-<!-- 🔹 Boot Screen -->
+<!-- 🔵 Windows 98 Boot Screen -->
 <div id="boot-screen">
-<h2>Starting Windows 98...</h2>
-<p>Launching YOURCOIN.exe</p>
+<div class="boot-logo">Microsoft Windows 98</div>
+<div class="boot-bar">
+<div class="boot-progress" id="boot-progress"></div>
+</div>
+<p style="margin-top:20px;">Starting YOURCOIN OS...</p>
 </div>
 
 <audio id="startup-sound">
 <source src="https://www.myinstants.com/media/sounds/windows-98-startup.mp3">
 </audio>
 
-<!-- 🔹 Desktop -->
+<!-- 🖥 Desktop -->
 <div id="desktop">
 
-<!-- Desktop Icons -->
+<!-- Icons -->
 <div class="icon" onclick="openWindow('about')">
 <img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-0.png">
 <div>About</div>
@@ -100,11 +136,11 @@ border: 1px inset #000;
 </div>
 
 <!-- About Window -->
-<div id="about" class="window" style="top:80px; left:200px; display:none;">
+<div id="about" class="window" style="top:100px; left:200px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">About YOURCOIN.exe</div>
 <div class="title-bar-controls">
-<button onclick="closeWindow('about')"></button>
+<button aria-label="Close" onclick="closeWindow('about')">X</button>
 </div>
 </div>
 <div class="window-body">
@@ -114,11 +150,11 @@ border: 1px inset #000;
 </div>
 
 <!-- Token Window -->
-<div id="token" class="window" style="top:120px; left:300px; display:none;">
+<div id="token" class="window" style="top:130px; left:300px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Token Info</div>
 <div class="title-bar-controls">
-<button onclick="closeWindow('token')"></button>
+<button aria-label="Close" onclick="closeWindow('token')">X</button>
 </div>
 </div>
 <div class="window-body">
@@ -137,7 +173,7 @@ border: 1px inset #000;
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text">Roadmap.doc</div>
 <div class="title-bar-controls">
-<button onclick="closeWindow('roadmap')"></button>
+<button aria-label="Close" onclick="closeWindow('roadmap')">X</button>
 </div>
 </div>
 <div class="window-body">
@@ -152,10 +188,10 @@ border: 1px inset #000;
 
 </div>
 
-<!-- 🔹 Taskbar -->
+<!-- 🟦 Taskbar -->
 <div class="taskbar">
 <div class="window" style="margin:0; width:100%;">
-<div class="window-body" style="display:flex; justify-content:space-between;">
+<div class="window-body taskbar-inner">
 <button>Start</button>
 <span>YOURCOIN OS</span>
 <span id="clock"></span>
@@ -164,26 +200,31 @@ border: 1px inset #000;
 </div>
 
 <script>
-// Boot sequence
-window.onload = function() {
+/* Boot Animation */
+let progress = 0;
+const bootInterval = setInterval(() => {
+progress += 5;
+document.getElementById("boot-progress").style.width = progress + "%";
+if (progress >= 100) {
+clearInterval(bootInterval);
 setTimeout(() => {
 document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
 document.getElementById("startup-sound").play();
-alert("Welcome to YOURCOIN OS");
-}, 2500);
-};
+}, 500);
+}
+}, 100);
 
-// Clock
+/* Clock */
 function updateClock() {
 const now = new Date();
 document.getElementById("clock").textContent =
-now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// Open/Close Windows
+/* Window Controls */
 function openWindow(id) {
 document.getElementById(id).style.display = "block";
 }
@@ -192,7 +233,7 @@ function closeWindow(id) {
 document.getElementById(id).style.display = "none";
 }
 
-// Dragging Logic
+/* Dragging */
 let dragItem = null;
 let offsetX = 0;
 let offsetY = 0;
