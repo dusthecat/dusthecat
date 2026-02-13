@@ -80,6 +80,7 @@ inset: 0;
 
 .icon {
 width: 80px;
+height: 90px;
 text-align: center;
 color: white;
 cursor: pointer;
@@ -201,10 +202,8 @@ z-index: 2000;
 </div>
 </div>
 
-<!-- Random Media Icons -->
 <div id="icon-layer"></div>
 
-<!-- Media Viewer -->
 <div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text" id="mediaTitle">Media Viewer</div>
@@ -269,11 +268,9 @@ now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 setInterval(updateClock, 1000);
 updateClock();
 
-/* ---------------- MEDIA PLACEHOLDERS ---------------- */
+/* ---------------- MEDIA DATA ---------------- */
 
 const mediaIcons = [
-
-/* 8 IMAGE PLACEHOLDERS */
 { label: "image1.png", type: "image", url: "REPLACE_IMAGE_URL_1" },
 { label: "image2.png", type: "image", url: "REPLACE_IMAGE_URL_2" },
 { label: "image3.png", type: "image", url: "REPLACE_IMAGE_URL_3" },
@@ -283,7 +280,6 @@ const mediaIcons = [
 { label: "image7.png", type: "image", url: "REPLACE_IMAGE_URL_7" },
 { label: "image8.png", type: "image", url: "REPLACE_IMAGE_URL_8" },
 
-/* 12 VIDEO/GIF PLACEHOLDERS */
 { label: "video1.mp4", type: "video", url: "REPLACE_VIDEO_URL_1" },
 { label: "video2.mp4", type: "video", url: "REPLACE_VIDEO_URL_2" },
 { label: "video3.mp4", type: "video", url: "REPLACE_VIDEO_URL_3" },
@@ -296,14 +292,52 @@ const mediaIcons = [
 { label: "video10.mp4", type: "video", url: "REPLACE_VIDEO_URL_10" },
 { label: "video11.mp4", type: "video", url: "REPLACE_VIDEO_URL_11" },
 { label: "video12.mp4", type: "video", url: "REPLACE_VIDEO_URL_12" }
-
 ];
+
+/* ---------------- NON-OVERLAPPING SCATTER ---------------- */
 
 function scatterIcons() {
 const layer = document.getElementById("icon-layer");
 const desktop = document.getElementById("desktop");
 
+const placed = [];
+const iconWidth = 80;
+const iconHeight = 90;
+const padding = 10;
+
 mediaIcons.forEach(item => {
+
+let x, y;
+let attempts = 0;
+let placedSuccessfully = false;
+
+while (!placedSuccessfully && attempts < 200) {
+
+x = Math.random() * (desktop.clientWidth - iconWidth);
+y = Math.random() * (desktop.clientHeight - iconHeight);
+
+let collision = false;
+
+for (let other of placed) {
+if (
+x < other.x + iconWidth + padding &&
+x + iconWidth + padding > other.x &&
+y < other.y + iconHeight + padding &&
+y + iconHeight + padding > other.y
+) {
+collision = true;
+break;
+}
+}
+
+if (!collision) {
+placed.push({ x, y });
+placedSuccessfully = true;
+}
+
+attempts++;
+}
+
 const icon = document.createElement("div");
 icon.className = "icon";
 
@@ -318,10 +352,11 @@ icon.innerHTML = `
 
 icon.ondblclick = () => openMedia(item.label, item.url, item.type);
 
-icon.style.left = Math.random() * (desktop.clientWidth - 100) + "px";
-icon.style.top = Math.random() * (desktop.clientHeight - 100) + "px";
+icon.style.left = x + "px";
+icon.style.top = y + "px";
 
 layer.appendChild(icon);
+
 });
 }
 
@@ -349,6 +384,7 @@ document.getElementById("mediaBody").innerHTML = "";
 }
 
 /* ---------------- CAT ---------------- */
+
 function startCatAnimation() {
 const cat = document.getElementById("floating-cat");
 let x = 100, y = 100, dx = 2, dy = 2;
@@ -376,3 +412,4 @@ animate();
 
 </body>
 </html>
+
