@@ -66,6 +66,7 @@ display: none;
 height: calc(100vh - 40px);
 padding: 20px;
 position: relative;
+overflow: hidden;
 }
 
 .icon {
@@ -80,11 +81,21 @@ margin-bottom: 25px;
 width: 32px;
 }
 
+/* ---------------- FLOATING CAT ---------------- */
+
+#floating-cat {
+position: absolute;
+width: 120px;
+z-index: 1;
+pointer-events: none;
+}
+
 /* ---------------- WINDOWS ---------------- */
 
 .window {
 position: absolute;
 width: 400px;
+z-index: 5;
 }
 
 .contract-box {
@@ -140,7 +151,7 @@ z-index: 2000;
 
 <body>
 
-<!-- 🔵 BOOT SCREEN -->
+<!-- BOOT SCREEN -->
 <div id="boot-screen">
 <div class="boot-container">
 <div class="boot-bar">
@@ -154,8 +165,10 @@ z-index: 2000;
 <source src="https://www.myinstants.com/media/sounds/windows-98-startup.mp3">
 </audio>
 
-<!-- 🖥 DESKTOP -->
+<!-- DESKTOP -->
 <div id="desktop">
+
+<img src="./floatingdus.png" id="floating-cat">
 
 <!-- Desktop Icons -->
 <div class="icon" onclick="openWindow('about')">
@@ -226,14 +239,12 @@ z-index: 2000;
 
 </div>
 
-<!-- 🟦 TASKBAR -->
+<!-- TASKBAR -->
 <div id="taskbar">
 <div class="start-button">
 <button onclick="toggleStartMenu()">Start</button>
 </div>
-
 <div class="taskbar-spacer"></div>
-
 <div class="taskbar-clock">
 <div class="window">
 <div class="window-body" id="clock" style="padding:4px 10px;"></div>
@@ -241,7 +252,7 @@ z-index: 2000;
 </div>
 </div>
 
-<!-- 🟩 START MENU -->
+<!-- START MENU -->
 <div id="start-menu" class="window">
 <div class="window-body">
 <p><strong>Programs</strong></p>
@@ -264,9 +275,38 @@ setTimeout(() => {
 document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
 document.getElementById("startup-sound").play();
+startCatAnimation();
 }, 500);
 }
 }, 100);
+
+/* Floating Cat Animation */
+function startCatAnimation() {
+const cat = document.getElementById("floating-cat");
+let x = 100;
+let y = 100;
+let dx = 2;
+let dy = 2;
+
+function animate() {
+const desktop = document.getElementById("desktop");
+const maxX = desktop.clientWidth - cat.clientWidth;
+const maxY = desktop.clientHeight - cat.clientHeight;
+
+x += dx;
+y += dy;
+
+if (x <= 0 || x >= maxX) dx *= -1;
+if (y <= 0 || y >= maxY) dy *= -1;
+
+cat.style.left = x + "px";
+cat.style.top = y + "px";
+
+requestAnimationFrame(animate);
+}
+
+animate();
+}
 
 /* Clock */
 function updateClock() {
