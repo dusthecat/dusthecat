@@ -72,11 +72,13 @@ overflow: hidden;
 position: absolute;
 top: 20px;
 left: 20px;
+z-index: 3; /* above background */
 }
 
 #icon-layer {
 position: absolute;
 inset: 0;
+z-index: 2;
 }
 
 .icon {
@@ -94,7 +96,7 @@ width: 32px;
 height: 32px;
 }
 
-/* fixed icons are relative blocks (keep your layout) */
+/* fixed icons should stack normally */
 .fixed-icons .icon {
 position: relative;
 }
@@ -208,8 +210,10 @@ z-index: 2000;
 </div>
 </div>
 
+<!-- Random Media Icons -->
 <div id="icon-layer"></div>
 
+<!-- Media Viewer -->
 <div id="mediaViewer" class="window" style="top:120px; left:200px; display:none;">
 <div class="title-bar" onmousedown="dragStart(event, this.parentElement)">
 <div class="title-bar-text" id="mediaTitle">Media Viewer</div>
@@ -229,7 +233,7 @@ z-index: 2000;
 </div>
 </div>
 <div class="window-body">
-<p>Dus the cat is an original IP 3d cat created by artist and developer @Zinancho</p>
+<p>DUSTHECAT is the most powerful meme coin on Pump.fun.</p>
 </div>
 </div>
 
@@ -244,7 +248,7 @@ z-index: 2000;
 <div class="window-body">
 <p>Supply: 1,000,000,000</p>
 <p>Tax: 0%</p>
-<p>Chain: Solana (pump.fun)</p>
+<p>Chain: Solana</p>
 </div>
 </div>
 
@@ -259,7 +263,7 @@ z-index: 2000;
 <div class="window-body">
 <ol>
 <li>Launch</li>
-<li>Onboard the artist (Zinancho)</li>
+<li>Memes</li>
 <li>Viral</li>
 <li>Billions</li>
 </ol>
@@ -275,7 +279,7 @@ z-index: 2000;
 </div>
 <div class="taskbar-spacer"></div>
 <div class="taskbar-clock">
-<div class="window">
+<div class="window" style="margin:0;">
 <div class="window-body" id="clock"></div>
 </div>
 </div>
@@ -301,12 +305,19 @@ clearInterval(bootInterval);
 setTimeout(() => {
 document.getElementById("boot-screen").style.display = "none";
 document.getElementById("desktop").style.display = "block";
-document.getElementById("startup-sound").play();
+
+// audio can fail without user gesture; that's ok
+try { document.getElementById("startup-sound").play(); } catch (e) {}
 
 startCatAnimation();
 
-// IMPORTANT: wait 1 tick so desktop dimensions are correct
+// ensure desktop has real width/height before scattering
+requestAnimationFrame(() => {
 setTimeout(() => scatterIcons(), 120);
+});
+
+// wire UI once desktop is visible
+wireUI();
 }, 500);
 }
 }, 100);
@@ -320,13 +331,19 @@ now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 setInterval(updateClock, 1000);
 updateClock();
 
+/* ---------------- Z ORDER ---------------- */
+let topZ = 10;
+function bringToFront(el){
+topZ += 1;
+el.style.zIndex = topZ;
+}
+
 /* ---------------- START MENU ---------------- */
 function toggleStartMenu(){
 const menu = document.getElementById("start-menu");
 menu.style.display = (menu.style.display === "block") ? "none" : "block";
 }
 
-/* close start menu when clicking elsewhere */
 document.addEventListener("mousedown", (e) => {
 const menu = document.getElementById("start-menu");
 const startBtn = document.getElementById("start-btn");
@@ -340,6 +357,7 @@ function openWindow(id){
 const el = document.getElementById(id);
 if (!el) return;
 el.style.display = "block";
+bringToFront(el);
 document.getElementById("start-menu").style.display = "none";
 }
 function closeWindow(id){
@@ -363,13 +381,14 @@ body.innerHTML = `<img class="media-content" src="${url}">`;
 }
 
 viewer.style.display = "block";
+bringToFront(viewer);
 }
 function closeMedia() {
 document.getElementById("mediaViewer").style.display = "none";
 document.getElementById("mediaBody").innerHTML = "";
 }
 
-/* ---------------- MEDIA DATA ---------------- */
+/* ---------------- MEDIA DATA (YOUR FULL LIST) ---------------- */
 const mediaIcons = [
 { label: "applepic.png", type: "image", url: "./media/applepic.jpg" },
 { label: "detective.png", type: "image", url: "./media/detective.jpg" },
@@ -407,20 +426,33 @@ const iconWidth = 80;
 const iconHeight = 90;
 const padding = 10;
 
-// Desktop dimensions (after render)
 const maxW = desktop.clientWidth;
 const maxH = desktop.clientHeight;
+
+// avoid the fixed icon column (roughly)
+const avoid = { x: 0, y: 0, w: 160, h: 360 };
 
 mediaIcons.forEach(item => {
 let x = 0, y = 0;
 let attempts = 0;
 let placedSuccessfully = false;
 
-while (!placedSuccessfully && attempts < 400) {
+while (!placedSuccessfully && attempts < 800) {
 x = Math.random() * (maxW - iconWidth);
 y = Math.random() * (maxH - iconHeight);
 
-// collision check
+// avoid fixed icon area
+const hitsFixed =
+x < avoid.x + avoid.w &&
+x + iconWidth > avoid.x &&
+y < avoid.y + avoid.h &&
+y + iconHeight > avoid.y;
+
+if (hitsFixed) {
+attempts++;
+continue;
+}
+
 let collision = false;
 for (let other of placed) {
 if (
@@ -457,7 +489,12 @@ icon.innerHTML = `
 icon.style.left = x + "px";
 icon.style.top = y + "px";
 
-// Use JS events (reliable)
+// IMPORTANT: open on BOTH click and dblclick
+icon.addEventListener("click", (e) => {
+e.preventDefault();
+e.stopPropagation();
+openMedia(item.label, item.url, item.type);
+});
 icon.addEventListener("dblclick", (e) => {
 e.preventDefault();
 e.stopPropagation();
@@ -468,25 +505,34 @@ layer.appendChild(icon);
 });
 }
 
-/* ---------------- CLICK / MENU WIRING (RELIABLE) ---------------- */
-window.addEventListener("DOMContentLoaded", () => {
-// fixed desktop icons
+/* ---------------- WIRE UI (FIXED ICONS + START MENU) ---------------- */
+function wireUI() {
+const startBtn = document.getElementById("start-btn");
+startBtn.onclick = toggleStartMenu;
+
+// Open fixed windows on click AND dblclick
 const aboutIcon = document.getElementById("icon-about");
 const tokenIcon = document.getElementById("icon-token");
 const roadmapIcon = document.getElementById("icon-roadmap");
 
-aboutIcon.addEventListener("dblclick", () => openWindow("about"));
-tokenIcon.addEventListener("dblclick", () => openWindow("token"));
-roadmapIcon.addEventListener("dblclick", () => openWindow("roadmap"));
+const openAbout = (e) => { e.preventDefault(); e.stopPropagation(); openWindow("about"); };
+const openToken = (e) => { e.preventDefault(); e.stopPropagation(); openWindow("token"); };
+const openRoadmap = (e) => { e.preventDefault(); e.stopPropagation(); openWindow("roadmap"); };
 
-// start button
-document.getElementById("start-btn").addEventListener("click", toggleStartMenu);
+aboutIcon.addEventListener("click", openAbout);
+aboutIcon.addEventListener("dblclick", openAbout);
 
-// start menu items
-document.getElementById("menu-about").addEventListener("click", () => openWindow("about"));
-document.getElementById("menu-token").addEventListener("click", () => openWindow("token"));
-document.getElementById("menu-roadmap").addEventListener("click", () => openWindow("roadmap"));
-});
+tokenIcon.addEventListener("click", openToken);
+tokenIcon.addEventListener("dblclick", openToken);
+
+roadmapIcon.addEventListener("click", openRoadmap);
+roadmapIcon.addEventListener("dblclick", openRoadmap);
+
+// Start menu items
+document.getElementById("menu-about").onclick = () => openWindow("about");
+document.getElementById("menu-token").onclick = () => openWindow("token");
+document.getElementById("menu-roadmap").onclick = () => openWindow("roadmap");
+}
 
 /* ---------------- DRAGGING (RESTORED) ---------------- */
 let dragItem = null;
@@ -495,6 +541,7 @@ let offsetY = 0;
 
 function dragStart(e, element) {
 dragItem = element;
+bringToFront(element);
 offsetX = e.clientX - element.offsetLeft;
 offsetY = e.clientY - element.offsetTop;
 document.onmousemove = drag;
